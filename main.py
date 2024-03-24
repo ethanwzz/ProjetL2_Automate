@@ -14,19 +14,20 @@ class Automate:
         return True
 
     def est_standard(self):
-        etats_accessibles = set(self.etats_initiaux)
-        etats_finaux = set(self.etats_terminaux)
-        etats_vus = set()
-        while etats_accessibles:
-            etat = etats_accessibles.pop()
-            etats_vus.add(etat)
-            transitions_sortantes = [t for t in self.transitions if t[0] == etat]
-            for transition in transitions_sortantes:
-                etat_arrivee = transition[2]
-                if etat_arrivee not in etats_vus:
-                    etats_accessibles.add(etat_arrivee)
-                if etat_arrivee in etats_finaux and etat not in self.etats_initiaux:
-                    return False
+        # Vérifier s'il y a exactement un seul état initial
+        if len(self.etats_initiaux) != 1:
+            return False
+
+        etat_initial = self.etats_initiaux[0]
+
+        # Vérifier si aucune transition ne mène à l'état initial, sauf les boucles sur d'autres états
+        for transition in self.transitions:
+            if transition[2] == etat_initial:
+                if transition[0] == etat_initial:
+                    return False  # Une boucle directe sur l'état initial n'est pas autorisée
+                elif transition[0] in self.etats_initiaux:
+                    return False  # Une transition de l'état initial vers lui-même ou un autre état initial n'est pas autorisée
+
         return True
 
     def est_complet(self):

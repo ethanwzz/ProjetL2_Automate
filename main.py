@@ -6,6 +6,37 @@ class Automate:
         self.etats_terminaux = etats_terminaux
         self.transitions = transitions
 
+    def est_deterministe(self):
+        for etat in self.etats:
+            transitions_sortantes = [t for t in self.transitions if t[0] == etat]
+            if len(transitions_sortantes) > len(set(t[1] for t in transitions_sortantes)):
+                return False
+        return True
+
+    def est_standard(self):
+        etats_accessibles = set(self.etats_initiaux)
+        etats_finaux = set(self.etats_terminaux)
+        etats_vus = set()
+        while etats_accessibles:
+            etat = etats_accessibles.pop()
+            etats_vus.add(etat)
+            transitions_sortantes = [t for t in self.transitions if t[0] == etat]
+            for transition in transitions_sortantes:
+                etat_arrivee = transition[2]
+                if etat_arrivee not in etats_vus:
+                    etats_accessibles.add(etat_arrivee)
+                if etat_arrivee in etats_finaux and etat not in self.etats_initiaux:
+                    return False
+        return True
+
+    def est_complet(self):
+        for etat in self.etats:
+            for symbole in self.alphabet:
+                transitions = [t for t in self.transitions if t[0] == etat and t[1] == symbole]
+                if not transitions:
+                    return False
+        return True
+
     def afficher_tableau(self):
         # Création de la première ligne du tableau avec les symboles de l'alphabet
         header = "\t" + "\t".join(self.alphabet)
@@ -25,7 +56,7 @@ class Automate:
             rows.append("\t".join(row))
 
         # Affichage du tableau
-        print("I\tT\tE" + header)
+        print("E\tS Etat" + header)
         for row in rows:
             print(row)
 
@@ -50,6 +81,9 @@ def main():
     nom_fichier = "automate.txt" #input("Entrez le nom du fichier contenant l'automate : ")
     automate = lire_automate_sur_fichier(nom_fichier)
     automate.afficher_tableau()
+    print("L'automate est déterministe :", automate.est_deterministe())
+    print("L'automate est standard :", automate.est_standard())
+    print("L'automate est complet :", automate.est_complet())
 
 if __name__ == "__main__":
     main()

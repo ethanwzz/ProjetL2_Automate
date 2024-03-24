@@ -13,7 +13,11 @@ class Automate:
         # Création des lignes du tableau avec les transitions pour chaque état
         rows = []
         for etat in self.etats:
-            row = [str(etat)]
+            row = []
+            # Ajout des indicateurs d'états initiaux et terminaux en première colonne
+            row.append('I' if etat in self.etats_initiaux else '')
+            row.append('T' if etat in self.etats_terminaux else '')
+            row.append(str(etat))  # Ajout de l'état à la première colonne
             for symbole in self.alphabet:
                 # Recherche des transitions pour l'état et le symbole courants
                 destinations = [t[2] for t in self.transitions if t[0] == etat and t[1] == symbole]
@@ -21,7 +25,7 @@ class Automate:
             rows.append("\t".join(row))
 
         # Affichage du tableau
-        print(header)
+        print("I\tT\tE" + header)
         for row in rows:
             print(row)
 
@@ -43,7 +47,7 @@ def lire_automate_sur_fichier(nom_fichier):
         return Automate(alphabet, list(range(etats_count)), etats_initiaux, etats_terminaux, transitions)
 
 def main():
-    nom_fichier = input("Entrez le nom du fichier contenant l'automate : ")
+    nom_fichier = "automate.txt" #input("Entrez le nom du fichier contenant l'automate : ")
     automate = lire_automate_sur_fichier(nom_fichier)
     automate.afficher_tableau()
 

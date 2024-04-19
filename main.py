@@ -61,6 +61,41 @@ class Automate:
         for row in rows:
             print(row)
 
+    def afficher_informations(self):
+        if self.est_deterministe():
+            print("L'automate est déterministe")
+        else:
+            print("L'automate n'est pas déterministe")
+
+        if self.est_standard():
+            print("L'automate est standardisé")
+        else:
+            print("L'automate n'est pas standardisé")
+
+        if self.est_complet():
+            print("L'automate est complet")
+        else:
+            print("L'automate n'est pas complet")
+
+    def standardiser(self):
+        if not self.est_standard():
+            # Suppression des états initiaux multiples
+            new_etat_initial = 'I'
+            new_transitions = []
+            for transition in self.transitions:
+                if transition[0] in self.etats_initiaux:
+                    new_transitions.append((new_etat_initial, transition[1], transition[2]))
+                else:
+                    new_transitions.append(transition)
+
+            # Mise à jour des états et transitions
+            self.etats_initiaux = [new_etat_initial]
+            self.etats.append(new_etat_initial)
+            self.transitions = new_transitions
+
+            print("L'automate a été standardisé.")
+
+
 def lire_automate_sur_fichier(nom_fichier):
     with open(nom_fichier, 'r') as file:
         lines = file.readlines()
@@ -78,13 +113,21 @@ def lire_automate_sur_fichier(nom_fichier):
             transitions.append((etat_depart, symbole, etat_arrivee))
         return Automate(alphabet, list(range(etats_count)), etats_initiaux, etats_terminaux, transitions)
 
+
+
+
+def choisir_automate():
+    numero_equipe = input("Entrez le numéro de votre équipe : ")
+    numero_automate = input("Entrez le numéro de l'automate : ")
+    nom_fichier = f"{numero_equipe}-{numero_automate}.txt"
+    return nom_fichier
 def main():
-    nom_fichier = "automate.txt" #input("Entrez le nom du fichier contenant l'automate : ")
+    nom_fichier = choisir_automate()
     automate = lire_automate_sur_fichier(nom_fichier)
     automate.afficher_tableau()
-    print("L'automate est déterministe :", automate.est_deterministe())
-    print("L'automate est standard :", automate.est_standard())
-    print("L'automate est complet :", automate.est_complet())
+    automate.afficher_informations()
+    automate.standardiser()
+    automate.afficher_tableau()
 
 if __name__ == "__main__":
     main()

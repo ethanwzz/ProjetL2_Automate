@@ -1,0 +1,18 @@
+4   # Nombre de symboles dans l'alphabet de l'automate
+4   # Nombre d'états
+1 1 # Nombre d'états initiaux, suivi de leurs numéros
+1 1 # Nombre d'états terminaux, suivi de leurs numéros
+6   # Nombre de transitions
+0d1 # Transitions
+1a0
+1a2
+1a3
+2b3
+3c0
+
+
+
+
+
+
+

@@ -1,102 +1,7 @@
-class Automate:
-    def __init__(self, alphabet, etats, etats_initiaux, etats_terminaux, transitions):
-        self.alphabet = alphabet
-        self.etats = etats
-        self.etats_initiaux = etats_initiaux
-        self.etats_terminaux = etats_terminaux
-        self.transitions = transitions
-
-    def est_deterministe(self):
-        for etat in self.etats:
-            transitions_sortantes = [t for t in self.transitions if t[0] == etat]
-            if len(transitions_sortantes) > len(set(t[1] for t in transitions_sortantes)):
-                return False
-        return True
-
-    def est_standard(self):
-        # Vérifier s'il y a exactement un seul état initial
-        if len(self.etats_initiaux) != 1:
-            return False
-
-        etat_initial = self.etats_initiaux[0]
-
-        # Vérifier si aucune transition ne mène à l'état initial, sauf les boucles sur d'autres états
-        for transition in self.transitions:
-            if transition[2] == etat_initial:
-                if transition[0] == etat_initial:
-                    return False  # Une boucle directe sur l'état initial n'est pas autorisée
-                elif transition[0] in self.etats_initiaux:
-                    return False  # Une transition de l'état initial vers lui-même ou un autre état initial n'est pas autorisée
-
-        return True
-
-    def est_complet(self):
-        for etat in self.etats:
-            for symbole in self.alphabet:
-                transitions = [t for t in self.transitions if t[0] == etat and t[1] == symbole]
-                if not transitions:
-                    return False
-        return True
-
-    def afficher_tableau(self):
-        # Création de la première ligne du tableau avec les symboles de l'alphabet
-        header = "\t" + "\t".join(self.alphabet)
-
-        # Création des lignes du tableau avec les transitions pour chaque état
-        rows = []
-        for etat in self.etats:
-            row = []
-            # Ajout des indicateurs d'états initiaux et terminaux en première colonne
-            row.append('I' if etat in self.etats_initiaux else '')
-            row.append('T' if etat in self.etats_terminaux else '')
-            row.append(str(etat))  # Ajout de l'état à la première colonne
-            for symbole in self.alphabet:
-                # Recherche des transitions pour l'état et le symbole courants
-                destinations = [t[2] for t in self.transitions if t[0] == etat and t[1] == symbole]
-                row.append(",".join(map(str, destinations)) if destinations else "-")
-            rows.append("\t".join(row))
-
-        # Affichage du tableau
-        print("E\tS Etat" + header)
-        for row in rows:
-            print(row)
-
-    def afficher_informations(self):
-        if self.est_deterministe():
-            print("L'automate est déterministe")
-        else:
-            print("L'automate n'est pas déterministe")
-
-        if self.est_standard():
-            print("L'automate est standardisé")
-        else:
-            print("L'automate n'est pas standardisé")
-
-        if self.est_complet():
-            print("L'automate est complet")
-        else:
-            print("L'automate n'est pas complet")
-
-    def standardiser(self):
-        if not self.est_standard():
-            # Suppression des états initiaux multiples
-            new_etat_initial = 'I'
-            new_transitions = []
-            for transition in self.transitions:
-                if transition[0] in self.etats_initiaux:
-                    new_transitions.append((new_etat_initial, transition[1], transition[2]))
-                else:
-                    new_transitions.append(transition)
-
-            # Mise à jour des états et transitions
-            self.etats_initiaux = [new_etat_initial]
-            self.etats.append(new_etat_initial)
-            self.transitions = new_transitions
-
-            print("L'automate a été standardisé.")
+from automate import Automate
 
 
-def lire_automate_sur_fichier(nom_fichier):
+def lire_automate(nom_fichier):
     with open(nom_fichier, 'r') as file:
         lines = file.readlines()
         alphabet_size = int(lines[0].split('#')[0].strip())
@@ -107,27 +12,75 @@ def lire_automate_sur_fichier(nom_fichier):
         transitions = []
         for line in lines[5:]:
             parts = line.strip().split()
-            etat_depart = int(parts[0][0])  # Premier caractère de la première partie de la transition
-            symbole = parts[0][1]           # Deuxième caractère de la première partie de la transition
-            etat_arrivee = int(parts[0][2]) # Troisième caractère de la première partie de la transition
+            etat_depart = int(parts[0][0])
+            symbole = parts[0][1]
+            etat_arrivee = int(parts[0][2])
             transitions.append((etat_depart, symbole, etat_arrivee))
         return Automate(alphabet, list(range(etats_count)), etats_initiaux, etats_terminaux, transitions)
 
 
-
-
-def choisir_automate():
-    numero_equipe = input("Entrez le numéro de votre équipe : ")
-    numero_automate = input("Entrez le numéro de l'automate : ")
-    nom_fichier = f"{numero_equipe}-{numero_automate}.txt"
-    return nom_fichier
 def main():
-    nom_fichier = choisir_automate()
-    automate = lire_automate_sur_fichier(nom_fichier)
-    automate.afficher_tableau()
-    automate.afficher_informations()
-    automate.standardiser()
-    automate.afficher_tableau()
+    while True:
+        num_automate = input("Entrez le numéro de l'automate ou tapez 'exit' pour quitter: ")
+        if num_automate.lower() == 'exit':
+            break
+
+        nom_fichier = f"{num_automate}.txt"
+        try:
+            automate = lire_automate(nom_fichier)
+        except Exception as e:
+            print(f"Erreur lors de la lecture du fichier : {e}")
+            continue
+
+        while True:
+            automate.print_automate()
+            print("L'automate est-il standard ? ", automate.est_standard())
+            print("L'automate est-il déterministe ? ", automate.est_deterministe())
+            print("L'automate est-il complet ? ", automate.est_complet())
+
+            print("\nChoisissez une option :")
+            print("1 - Choisir un autre automate")
+            print("2 - Déterminiser cet automate")
+            print("3 - Standardiser cet automate")
+            print("4 - Compléter cet automate")
+            print("5 - Minimiser cet automate")
+            print("6 - Quitter")
+
+            choix = input("Entrez votre choix : ")
+
+            if choix == '1':
+                break  # Sortir de la boucle pour choisir un autre automate
+            elif choix == '2':
+                if not automate.est_deterministe():
+                    automate = automate.determiniser()
+                    print("Automate après déterminisation :")
+                else:
+                    print("Cet automate est déjà déterministe.")
+            elif choix == '3':
+                if not automate.est_standard():
+                    automate = automate.standardiser()
+                    print("Automate après standardisation :")
+                else:
+                    print("Cet automate est déjà standard.")
+            elif choix == '4':
+                if not automate.est_complet():
+                    automate = automate.completer()
+                    print("Automate après complétion :")
+                else:
+                    print("Cet automate est déjà complet.")
+            elif choix == '5':
+                if automate.est_deterministe() and automate.est_complet():
+                    automate.minimiser()
+                    print("Automate après minimisation :")
+                else:
+                    print("L'automate n'est pas deterministe complet, on ne peut donc pas le minimiser")
+            elif choix == '6':
+                return  # Quitter le programme
+            else:
+                print("Choix non valide. Veuillez réessayer.")
+
+
+
 
 if __name__ == "__main__":
     main()

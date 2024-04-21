@@ -44,7 +44,8 @@ def main():
             print("3 - Standardiser cet automate")
             print("4 - Compléter cet automate")
             print("5 - Faire le complémentaire cet automate")
-            print("6 - Quitter")
+            print("6 - Supprimer les etats inatteignables")
+            print("7 - Quitter")
 
             choix = input("Entrez votre choix : ")
 
@@ -75,11 +76,12 @@ def main():
                 else:
                     print("Il faut que l'automate soit deterministe complet pour pouvoir faire son complémentaire")
             elif choix == '6':
+                automate.supprimer_etat_inatteignable()
+                print("Les etats inatteignables ont ete supprime")
+            elif choix == '7':
                 return  # Quitter le programme
             else:
                 print("Choix non valide. Veuillez réessayer.")
-
-
 
 
 if __name__ == "__main__":

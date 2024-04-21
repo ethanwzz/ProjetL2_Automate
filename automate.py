@@ -54,8 +54,8 @@ class Automate:
 
         # Un dictionnaire pour suivre les nouveaux états de l'automate déterministe
         # La clé est un frozenset d'états de l'automate original et la valeur est le nouvel état dans l'automate déterministe
-        new_states_map = {frozenset(self.initial_states): 0}
-        new_initial_states = [0]
+        new_states_map = {frozenset(self.initial_states): ''.join(map(str, sorted(self.initial_states)))}
+        new_initial_states = [new_states_map[frozenset(self.initial_states)]]
         new_transitions_list = []
         new_final_states = []
         checked_states = set()  # Garde une trace des états déjà vérifiés
@@ -73,7 +73,6 @@ class Automate:
 
             # Pour chaque symbole de l'alphabet, trouver le nouvel état après la transition
             for symbol in self.alphabet:
-                # Trouver toutes les transitions pour ce symbole pour tous les états courants
                 next_states = frozenset(
                     end_state for start_state in current_states
                     if (start_state, symbol) in self.transitions
@@ -85,7 +84,7 @@ class Automate:
 
                 # Ajouter les nouveaux états à la file d'attente si ce n'est pas déjà fait
                 if next_states not in new_states_map:
-                    new_state_id = len(new_states_map)
+                    new_state_id = ''.join(map(str, sorted(next_states)))
                     new_states_map[next_states] = new_state_id
                     states_to_check.append(next_states)
                 else:
@@ -95,13 +94,13 @@ class Automate:
                 new_transitions_list.append((current_state_id, symbol, new_state_id))
 
         # Construire le nouvel automate déterministe
-        new_states_count = len(new_states_map)
+        new_states = list(new_states_map.values())
         return Automate(
             self.alphabet,
-            list(range(new_states_count)),
+            new_states,
             new_initial_states,
             new_final_states,
-            new_transitions_list
+            [(start, symbol, end) for (start, symbol, end) in new_transitions_list]
         )
 
     def standardiser(self):
@@ -151,7 +150,7 @@ class Automate:
 
         return self
 
-    def remove_unreachable_states(self):
+    def supprimer_etat_inatteignable(self):
         accessible_states = set()
         states_to_check = [self.initial_states[0]]  # Partir de l'état initial
 
@@ -172,46 +171,6 @@ class Automate:
         # Mettre à jour les états initiaux et les états finaux
         self.initial_states = [s for s in self.initial_states if s in accessible_states]
         self.final_states = [s for s in self.final_states if s in accessible_states]
-
-    def minimiser(self):
-        self.remove_unreachable_states()
-
-        # Initialisation des partitions
-        P = [set(self.final_states), {state for state in self.states if state not in self.final_states}]
-        new_P = []
-
-        # Processus d'affinement des partitions
-        while P != new_P:
-            if new_P:
-                P = new_P.copy()
-            new_P = []
-
-            for A in P:
-                partitions = {}
-                for state in A:
-                    transitions = tuple((symbol, frozenset(self.transitions.get((state, symbol), []))) for symbol in self.alphabet)
-                    if transitions not in partitions:
-                        partitions[transitions] = []
-                    partitions[transitions].append(state)
-
-                new_P.extend([set(partition) for partition in partitions.values()])
-
-        # Reconstruire l'automate avec les partitions finales
-        new_transitions = {}
-        state_mapping = {state: i for i, part in enumerate(new_P) for state in part}
-        for (state, symbol), targets in self.transitions.items():
-            new_state = state_mapping[state]
-            new_target = state_mapping[next(iter(targets))]  # Assume une cible pour simplifier
-            if (new_state, symbol) not in new_transitions:
-                new_transitions[(new_state, symbol)] = new_target
-
-        # Mettre à jour les états, transitions, états initiaux et finaux
-        self.states = list(range(len(new_P)))
-        self.transitions = new_transitions
-        self.initial_states = [state_mapping[init] for init in self.initial_states if init in state_mapping]
-        self.final_states = [state_mapping[fin] for fin in self.final_states if fin in state_mapping]
-
-        return self
 
     def complementaire(self):
         # Déterminiser l'automate si ce n'est pas déjà fait
@@ -237,22 +196,25 @@ class Automate:
 
     def print_automate(self):
         # Calculer la largeur des colonnes pour l'affichage
-        max_state = max([state for state in self.states if state != -1], default=0, key=abs)
+        # Ignorer -1 dans le calcul de max_state si présent
+        max_state = max((state for state in self.states if state != -1), default=0,
+                        key=lambda x: abs(int(x)) if isinstance(x, str) and x.isdigit() else abs(x))
         state_width = max(len(str(max_state)), 5) + 2
-        cell_width = max(max(len(str(s)) for s in self.states if s != -1), 3, key=abs) + 2
+
+        # Assurer que toutes les transitions sont traitées comme des listes et calculer la largeur de la cellule
+        cell_width = max(
+            (max(len('P' if s == -1 else str(s)) for s in
+                 (transitions if isinstance(transitions, list) else [transitions]))
+             for _, transitions in self.transitions.items()), default=3) + 2
+
         type_width = 4  # Largeur pour la colonne de type
 
-        # En-tête du tableau
         header = f"{'Type':^{type_width}}" + f"{'Etat':^{state_width}}" + "".join(
             f"{sym:^{cell_width}}" for sym in self.alphabet)
         print(header)
         print('-' * len(header))
 
-        # Lignes du tableau
         for state in self.states:
-            # Remplacer l'affichage de l'état poubelle par 'P'
-            state_display = 'P' if state == -1 else state
-
             # Indiquer si l'état est initial, terminal ou les deux
             state_type = ''
             if state in self.initial_states:
@@ -260,10 +222,14 @@ class Automate:
             if state in self.final_states:
                 state_type += 'T'
 
+            # Afficher 'P' pour -1, sinon l'état normal
+            state_display = 'P' if state == -1 else state
             row = f"{state_type:^{type_width}}" + f"{state_display:^{state_width}}"
 
             for symbol in self.alphabet:
-                transition_states = self.transitions.get((state, symbol), [])
-                cell = ','.join('P' if s == -1 else str(s) for s in transition_states)
+                transitions = self.transitions.get((state, symbol), [])
+                # Convertir chaque état cible en 'P' si -1 ou en sa représentation normale
+                cell = ','.join('P' if s == -1 else str(s) for s in
+                                (transitions if isinstance(transitions, list) else [transitions]))
                 row += f"{cell:^{cell_width}}"
             print(row)

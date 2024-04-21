@@ -5,4 +5,3 @@
 2          # Nombre de transitions
 1a0        # Transitions
 0a0
-

@@ -3,6 +3,3 @@
 1 0         # Nombre d'états initiaux, suivi de leurs numéros
 1 0         # Nombre d'états terminaux, suivi de leurs numéros
 0           # Nombre de transitions
-
-
-

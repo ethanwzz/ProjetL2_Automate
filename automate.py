@@ -227,9 +227,44 @@ class Automate:
             row = f"{state_type:^{type_width}}" + f"{state_display:^{state_width}}"
 
             for symbol in self.alphabet:
-                transitions = self.transitions.get((state, symbol), [])
-                # Convertir chaque état cible en 'P' si -1 ou en sa représentation normale
-                cell = ','.join('P' if s == -1 else str(s) for s in
-                                (transitions if isinstance(transitions, list) else [transitions]))
+                # Récupérer tous les états accessibles depuis l'état actuel par le symbole donné
+                accessible_states = self.get_accessible_states(state, symbol)
+                if accessible_states:
+                    cell = ','.join('P' if s == -1 else str(s) for s in accessible_states)
+                else:
+                    cell = '-'
                 row += f"{cell:^{cell_width}}"
             print(row)
+
+    def get_accessible_states(self, start_state, symbol, visited=None):
+        # Si visited est None, cela signifie que c'est le premier appel de la fonction, initialisez-le à un ensemble vide
+        if visited is None:
+            visited = set()
+
+        # Ajouter l'état de départ à l'ensemble des états visités
+        visited.add(start_state)
+
+        # Si le symbole est epsilon, cherchez les transitions epsilon
+        if '*' in symbol:
+            accessible_states = set()
+            if (start_state, '*') in self.transitions:
+                # Parcours récursif des transitions epsilon depuis l'état de départ
+                for next_state in self.transitions[(start_state, '*')]:
+                    if next_state not in visited:
+                        # Récursivement, récupérez tous les états accessibles depuis l'état suivant par epsilon
+                        accessible_states.update(self.get_accessible_states(next_state, symbol, visited))
+            return accessible_states
+
+        # Si le symbole n'est pas epsilon, cherchez les transitions normales
+        else:
+            accessible_states = set()
+            if (start_state, symbol) in self.transitions:
+                # Ajouter tous les états cibles de la transition (y compris les transitions epsilon) à l'ensemble des états accessibles
+                accessible_states.update(self.transitions[(start_state, symbol)])
+                # Si une transition epsilon suit, recherchez également les états accessibles par epsilon
+                if (start_state, '*') in self.transitions:
+                    for next_state in self.transitions[(start_state, '*')]:
+                        if next_state not in visited:
+                            # Récursivement, récupérez tous les états accessibles depuis l'état suivant par epsilon
+                            accessible_states.update(self.get_accessible_states(next_state, symbol, visited))
+            return accessible_states

@@ -83,6 +83,59 @@ def main():
             else:
                 print("Choix non valide. Veuillez réessayer.")
 
+#Main permettant de faire l'entiereté des tests
+"""def main():
+    for i in range(1, 45):  # De E1-1 à E1-30
+        filename = f"E1-{i}.txt"
+        try:
+            print(f"Chargement de l'automate depuis le fichier : {filename}")
+            automate = lire_automate(filename)  # Assurez-vous que lire_automate est défini correctement
+            print(f"Automate chargé : {filename}")
+            automate.print_automate()  # Assurez-vous que print_automate est défini correctement
+            print("L'automate est-il standard ? ", automate.est_standard())
+            print("L'automate est-il déterministe ? ", automate.est_deterministe())
+            print("L'automate est-il complet ?", automate.est_complet())
+            print("")
+            automate = automate.standardiser()
+            automate.print_automate()
+            print("L'automate est-il standard ? ", automate.est_standard())
+            print("L'automate est-il déterministe ? ", automate.est_deterministe())
+            print("L'automate est-il complet ?", automate.est_complet())
+            print("")
+            automate = automate.determiniser()
+            automate.print_automate()
+            print("L'automate est-il standard ? ", automate.est_standard())
+            print("L'automate est-il déterministe ? ", automate.est_deterministe())
+            print("L'automate est-il complet ?", automate.est_complet())
+            print("")
+            automate = automate.completer()
+            automate.print_automate()
+            print("L'automate est-il standard ? ", automate.est_standard())
+            print("L'automate est-il déterministe ? ", automate.est_deterministe())
+            print("L'automate est-il complet ? ", automate.est_complet())
+            print("")
+            print("Voici l'automate complementaire : ")
+            automate = automate.complementaire()
+            automate.print_automate()
+
+
+
+
+
+            # Ici, ajoutez les opérations que vous voulez effectuer sur l'automate,
+            # comme éliminer les transitions epsilon, déterminiser, etc.
+            # Par exemple:
+            # automate.eliminate_epsilon_transitions()
+            # automate.determiniser()
+            # automate.print_automate()
+
+        except FileNotFoundError:
+            print(f"Le fichier {filename} n'a pas été trouvé.")
+        except Exception as e:
+            print(f"Une erreur est survenue lors du traitement de l'automate : {e}")
+
+        print("-" * 40)  # Séparateur pour chaque automate"""
+
 
 if __name__ == "__main__":
     main()

@@ -213,6 +213,28 @@ class Automate:
 
         return self
 
+    def complementaire(self):
+        # Déterminiser l'automate si ce n'est pas déjà fait
+        if not self.est_deterministe():
+            self = self.determiniser()
+
+        # Compléter l'automate si ce n'est pas déjà fait
+        if not self.est_complet():
+            self = self.completer()
+
+        # Inverser les états terminaux et non terminaux
+        for state in self.states:
+            if state in self.final_states:
+                self.final_states.remove(state)  # Retirer les états terminaux
+            else:
+                self.final_states.append(state)  # Rendre les états non terminaux terminaux
+
+        # Marquer l'état poubelle comme terminal
+        if -1 not in self.final_states:
+            self.final_states.append(-1)
+
+        return self
+
     def print_automate(self):
         # Calculer la largeur des colonnes pour l'affichage
         max_state = max([state for state in self.states if state != -1], default=0, key=abs)

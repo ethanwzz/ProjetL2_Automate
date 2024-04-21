@@ -43,7 +43,7 @@ def main():
             print("2 - Déterminiser cet automate")
             print("3 - Standardiser cet automate")
             print("4 - Compléter cet automate")
-            print("5 - Minimiser cet automate")
+            print("5 - Faire le complémentaire cet automate")
             print("6 - Quitter")
 
             choix = input("Entrez votre choix : ")
@@ -70,10 +70,10 @@ def main():
                     print("Cet automate est déjà complet.")
             elif choix == '5':
                 if automate.est_deterministe() and automate.est_complet():
-                    automate.minimiser()
-                    print("Automate après minimisation :")
+                    automate = automate.complementaire()
+                    print("Automate après complémentarisation")
                 else:
-                    print("L'automate n'est pas deterministe complet, on ne peut donc pas le minimiser")
+                    print("Il faut que l'automate soit deterministe complet pour pouvoir faire son complémentaire")
             elif choix == '6':
                 return  # Quitter le programme
             else:
